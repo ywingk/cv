@@ -1,20 +1,20 @@
-name: Build and Commit CV
+name: Build and Deploy CV
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - "main.tex"
 
 permissions:
-  contents: write   # 🔥 중요 (push 권한)
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Compile LaTeX
@@ -26,10 +26,13 @@ jobs:
       - name: Rename PDF
         run: mv main.pdf cv.pdf
 
-      - name: Commit and Push PDF
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git add cv.pdf
-          git commit -m "Auto update CV PDF" || echo "No changes to commit"
-          git push
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
