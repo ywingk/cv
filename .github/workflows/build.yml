@@ -1,15 +1,20 @@
-name: Build LaTeX CV
+name: Build and Commit CV
 
 on:
   push:
     branches: [ main ]
+    paths:
+      - "main.tex"
+
+permissions:
+  contents: write   # 🔥 중요 (push 권한)
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Compile LaTeX
@@ -18,8 +23,13 @@ jobs:
           root_file: main.tex
           latexmk_use_xelatex: true
 
-      - name: Upload PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: cv
-          path: main.pdf
+      - name: Rename PDF
+        run: mv main.pdf cv.pdf
+
+      - name: Commit and Push PDF
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add cv.pdf
+          git commit -m "Auto update CV PDF" || echo "No changes to commit"
+          git push
